@@ -84,10 +84,15 @@ public class RNPushNotificationListenerService extends GcmListenerService {
     }
 
     private void restartReactActivity(Intent receiveBroadcastIntent) {
-        Class mActivityClass = new RNPushNotificationHelper(getApplication(), this).getMainActivityClass();
-        Intent intent = new Intent(this, mActivityClass);
+        Intent intent = this.getPackageManager().getLaunchIntentForPackage(this.getPackageName());
+
         intent.putExtra("notification", receiveBroadcastIntent.getBundleExtra("notification"));
+
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
         startActivity(intent);
     }
 }
