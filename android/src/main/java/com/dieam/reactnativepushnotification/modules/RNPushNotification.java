@@ -26,13 +26,15 @@ import android.content.Context;
 public class RNPushNotification extends ReactContextBaseJavaModule {
     private ReactContext mReactContext;
     private Activity mActivity;
+    private Intent mIntent;
     private RNPushNotificationHelper mRNPushNotificationHelper;
     private static final String ReceiveNotificationExtra  = "receiveNotifExtra";
 
-    public RNPushNotification(ReactApplicationContext reactContext, Activity activity) {
+    public RNPushNotification(ReactApplicationContext reactContext, Activity activity, Intent intent) {
         super(reactContext);
 
         mActivity = activity;
+        mIntent = intent;
         mReactContext = reactContext;
         mRNPushNotificationHelper = new RNPushNotificationHelper(activity.getApplication(), reactContext);
         registerNotificationsRegistration();
@@ -57,6 +59,12 @@ public class RNPushNotification extends ReactContextBaseJavaModule {
             constants.put("initialNotification", bundleString);
         }
 
+        if (mIntent != null) {
+            Bundle b = mIntent.getBundleExtra("wakeupNotification");
+            String s = convertJSON(b);
+            constants.put("wakeupNotification", s);
+        }
+
         return constants;
     }
 
@@ -71,7 +79,7 @@ public class RNPushNotification extends ReactContextBaseJavaModule {
             Bundle bundle = intent.getBundleExtra("notification");
             bundle.putBoolean("foreground", false);
             intent.putExtra("notification", bundle);
-            notifyNotification(bundle);
+            notifyNotification(bundle, intent.getBooleanExtra("notificationClick", false));
         }
     }
 
@@ -97,7 +105,7 @@ public class RNPushNotification extends ReactContextBaseJavaModule {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (getReactApplicationContext().hasActiveCatalystInstance()) {
-                    notifyNotification(intent.getBundleExtra("notification"));
+                    notifyNotification(intent.getBundleExtra("notification"), false);
                     Bundle result = getResultExtras(true);
                     result.putString(ReceiveNotificationExtra, "success");
                     abortBroadcast();
@@ -107,13 +115,17 @@ public class RNPushNotification extends ReactContextBaseJavaModule {
         }, intentFilter);
     }
 
-    private void notifyNotification(Bundle bundle) {
+    private void notifyNotification(Bundle bundle, Boolean notificationClick) {
         String bundleString = convertJSON(bundle);
 
         WritableMap params = Arguments.createMap();
         params.putString("dataJSON", bundleString);
 
-        sendEvent("remoteNotificationReceived", params);
+        if (!notificationClick) {
+            sendEvent("remoteNotificationReceived", params);
+        } else {
+            sendEvent("notificationClick", params);
+        }
     }
 
     private String convertJSON(Bundle bundle) {

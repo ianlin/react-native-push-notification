@@ -14,6 +14,8 @@ import com.google.android.gms.gcm.GcmListenerService;
 
 import org.json.JSONObject;
 
+import android.util.Log;
+
 public class RNPushNotificationListenerService extends GcmListenerService {
 
     private static final String ReceiveNotificationExtra  = "receiveNotifExtra";
@@ -57,15 +59,26 @@ public class RNPushNotificationListenerService extends GcmListenerService {
             public void onReceive(Context context, Intent intent) {
                 Bundle result = getResultExtras(true);
                 String status = result.getString(ReceiveNotificationExtra, "fail");
-                if (status.equals("fail") && autoRestartReactActivity) {
-                    restartReactActivity(intent);
+                if (status.equals("fail")) {
+                    if (autoRestartReactActivity) {
+                        Log.d("RNPushNotification", "RNPushNotificationListenerService: BroadcastReceiver: restart react activity");
+                        restartReactActivity(intent);
+                    } else {
+                        Log.d("RNPushNotification", "RNPushNotificationListenerService: BroadcastReceiver: send local notificaion");
+                        sendLocalNotification(intent.getBundleExtra("notification"));
+                    }
                 }
             }
         }, null, Activity.RESULT_OK, null, null);
 
-        if (!isRunning) {
-            new RNPushNotificationHelper(getApplication(), this).sendNotification(bundle);
+        if (false) {
+            Log.d("RNPushNotification", "not running! send local notification");
+            sendLocalNotification(bundle);
         }
+    }
+
+    private void sendLocalNotification(Bundle bundle) {
+        new RNPushNotificationHelper(getApplication(), this).sendNotification(bundle);
     }
 
     private boolean isApplicationRunning() {
@@ -86,7 +99,7 @@ public class RNPushNotificationListenerService extends GcmListenerService {
     private void restartReactActivity(Intent receiveBroadcastIntent) {
         Intent intent = this.getPackageManager().getLaunchIntentForPackage(this.getPackageName());
 
-        intent.putExtra("notification", receiveBroadcastIntent.getBundleExtra("notification"));
+        intent.putExtra("wakeupNotification", receiveBroadcastIntent.getBundleExtra("notification"));
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
