@@ -13,6 +13,9 @@ var NOTIF_REGISTER_EVENT = 'remoteNotificationsRegistered';
 
 var NotificationsComponent = function() {
 	this.initalPop = false;
+	this.wakeupNotification = typeof RNPushNotification.wakeupNotification !== 'undefined' ?
+		JSON.parse(RNPushNotification.wakeupNotification) :
+		undefined;
 };
 
 NotificationsComponent.prototype.popInitialNotification = function() {

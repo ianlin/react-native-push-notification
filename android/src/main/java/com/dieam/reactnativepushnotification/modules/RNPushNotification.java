@@ -26,12 +26,15 @@ import android.content.Context;
 public class RNPushNotification extends ReactContextBaseJavaModule {
     private ReactContext mReactContext;
     private Activity mActivity;
+    private Map<String, Object> mConstants;
     private RNPushNotificationHelper mRNPushNotificationHelper;
+    private static final String ReceiveNotificationExtra  = "receiveNotifExtra";
 
-    public RNPushNotification(ReactApplicationContext reactContext, Activity activity) {
+    public RNPushNotification(ReactApplicationContext reactContext, Activity activity, Map<String, Object> constants) {
         super(reactContext);
 
         mActivity = activity;
+        mConstants = constants;
         mReactContext = reactContext;
         mRNPushNotificationHelper = new RNPushNotificationHelper(activity.getApplication(), reactContext);
         registerNotificationsRegistration();
@@ -56,6 +59,10 @@ public class RNPushNotification extends ReactContextBaseJavaModule {
             constants.put("initialNotification", bundleString);
         }
 
+        if (mConstants != null) {
+            constants.putAll(mConstants);
+        }
+
         return constants;
     }
 
@@ -72,7 +79,7 @@ public class RNPushNotification extends ReactContextBaseJavaModule {
             Bundle bundle = intent.getBundleExtra("notification");
             bundle.putBoolean("foreground", false);
             intent.putExtra("notification", bundle);
-            notifyNotification(bundle);
+            notifyNotification(bundle, intent.getBooleanExtra("notificationClick", false));
         }
     }
 
@@ -96,18 +103,28 @@ public class RNPushNotification extends ReactContextBaseJavaModule {
         mReactContext.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                notifyNotification(intent.getBundleExtra("notification"));
+                if (getReactApplicationContext().hasActiveCatalystInstance()) {
+                    notifyNotification(intent.getBundleExtra("notification"), false);
+                    Bundle result = getResultExtras(true);
+                    result.putString(ReceiveNotificationExtra, "success");
+                    abortBroadcast();
+                } else {
+                }
             }
         }, intentFilter);
     }
 
-    private void notifyNotification(Bundle bundle) {
+    private void notifyNotification(Bundle bundle, Boolean notificationClick) {
         String bundleString = convertJSON(bundle);
 
         WritableMap params = Arguments.createMap();
         params.putString("dataJSON", bundleString);
 
-        sendEvent("remoteNotificationReceived", params);
+        if (!notificationClick) {
+            sendEvent("remoteNotificationReceived", params);
+        } else {
+            sendEvent("notificationClick", params);
+        }
     }
 
     private String convertJSON(Bundle bundle) {
