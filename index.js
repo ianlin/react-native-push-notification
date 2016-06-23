@@ -23,7 +23,9 @@ var Notifications = {
 		alert: true,
 		badge: true,
 		sound: true
-	}
+	},
+
+	wakeupNotification: RNNotifications.wakeupNotification,
 };
 
 Notifications.callNative = function(name: String, params: Array) {
@@ -99,6 +101,7 @@ Notifications.unregister = function() {
 	this.callNative( 'removeEventListener', [ 'register', this._onRegister ] )
 	this.callNative( 'removeEventListener', [ 'notification', this._onNotification ] )
 	this.callNative( 'removeEventListener', [ 'localNotification', this._onNotification ] )
+	this.isLoaded = false;
 };
 
 /**

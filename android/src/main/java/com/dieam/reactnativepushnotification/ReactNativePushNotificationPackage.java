@@ -9,6 +9,7 @@ import com.facebook.react.uimanager.ViewManager;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ReactNativePushNotificationPackage implements ReactPackage {
     @Override
