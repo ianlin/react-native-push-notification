@@ -16,10 +16,12 @@ import java.util.List;
 
 public class ReactNativePushNotificationPackage implements ReactPackage {
     Activity mActivity;
+    Intent mIntent;
     RNPushNotification mRNPushNotification;
 
-    public ReactNativePushNotificationPackage(Activity activity) {
+    public ReactNativePushNotificationPackage(Activity activity, Intent intent) {
         mActivity = activity;
+        mIntent = intent;
     }
 
     @Override
@@ -27,7 +29,7 @@ public class ReactNativePushNotificationPackage implements ReactPackage {
             ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
 
-        mRNPushNotification = new RNPushNotification(reactContext, mActivity);
+        mRNPushNotification = new RNPushNotification(reactContext, mActivity, mIntent);
 
         modules.add(mRNPushNotification);
         return modules;

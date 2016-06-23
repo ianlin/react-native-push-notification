@@ -23,7 +23,9 @@ var Notifications = {
 		alert: true,
 		badge: true,
 		sound: true
-	}
+	},
+
+	wakeupNotification: RNNotifications.wakeupNotification,
 };
 
 Notifications.callNative = function(name: String, params: Array) {
