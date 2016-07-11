@@ -101,6 +101,7 @@ public class RNPushNotificationListenerService extends GcmListenerService {
         Intent intent = this.getPackageManager().getLaunchIntentForPackage(this.getPackageName());
 
         intent.putExtra("wakeupNotification", receiveBroadcastIntent.getBundleExtra("notification"));
+        intent.putExtra("moveTaskToBack", true);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
