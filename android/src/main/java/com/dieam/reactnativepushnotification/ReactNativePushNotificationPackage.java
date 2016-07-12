@@ -13,15 +13,16 @@ import com.facebook.react.uimanager.ViewManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class ReactNativePushNotificationPackage implements ReactPackage {
     Activity mActivity;
-    Intent mIntent;
+    private Map<String, Object> mConstants;
     RNPushNotification mRNPushNotification;
 
-    public ReactNativePushNotificationPackage(Activity activity, Intent intent) {
+    public ReactNativePushNotificationPackage(Activity activity, Map<String, Object> constants) {
         mActivity = activity;
-        mIntent = intent;
+        mConstants = constants;
     }
 
     @Override
@@ -29,7 +30,7 @@ public class ReactNativePushNotificationPackage implements ReactPackage {
             ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
 
-        mRNPushNotification = new RNPushNotification(reactContext, mActivity, mIntent);
+        mRNPushNotification = new RNPushNotification(reactContext, mActivity, mConstants);
 
         modules.add(mRNPushNotification);
         return modules;

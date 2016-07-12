@@ -26,15 +26,15 @@ import android.content.Context;
 public class RNPushNotification extends ReactContextBaseJavaModule {
     private ReactContext mReactContext;
     private Activity mActivity;
-    private Intent mIntent;
+    private Map<String, Object> mConstants;
     private RNPushNotificationHelper mRNPushNotificationHelper;
     private static final String ReceiveNotificationExtra  = "receiveNotifExtra";
 
-    public RNPushNotification(ReactApplicationContext reactContext, Activity activity, Intent intent) {
+    public RNPushNotification(ReactApplicationContext reactContext, Activity activity, Map<String, Object> constants) {
         super(reactContext);
 
         mActivity = activity;
-        mIntent = intent;
+        mConstants = constants;
         mReactContext = reactContext;
         mRNPushNotificationHelper = new RNPushNotificationHelper(activity.getApplication(), reactContext);
         registerNotificationsRegistration();
@@ -59,10 +59,8 @@ public class RNPushNotification extends ReactContextBaseJavaModule {
             constants.put("initialNotification", bundleString);
         }
 
-        if (mIntent != null) {
-            Bundle b = mIntent.getBundleExtra("wakeupNotification");
-            String s = convertJSON(b);
-            constants.put("wakeupNotification", s);
+        if (mConstants != null) {
+            constants.putAll(mConstants);
         }
 
         return constants;
