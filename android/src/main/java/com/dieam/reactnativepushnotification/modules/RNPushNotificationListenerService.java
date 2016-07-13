@@ -7,6 +7,8 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.content.Context;
 import android.content.BroadcastReceiver;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 
 import java.util.List;
 
@@ -20,10 +22,29 @@ public class RNPushNotificationListenerService extends GcmListenerService {
 
     private static final String ReceiveNotificationExtra  = "receiveNotifExtra";
     private static Boolean autoRestartReactActivity = false;
+    private PowerManager mPowerManager;
+    private WakeLock mPokeFullLock = null;
+
 
     @Override
     public void onMessageReceived(String from, Bundle bundle) {
         Log.d("RNPushNotification", "RNPushNotificationListenerService: onMessageReceived");
+        if (bundle != null && bundle.containsKey("pushType") && bundle.getString("pushType").equals("NotifyIncomingCall")) {
+            if (mPowerManager == null) {
+                mPowerManager = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+            }
+            if (mPokeFullLock == null) {
+                mPokeFullLock = mPowerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "RNPushNotification");
+                mPokeFullLock.setReferenceCounted(false);
+            }
+            synchronized (mPokeFullLock) {
+                if (!mPokeFullLock.isHeld()) {
+                    mPokeFullLock.acquire(10000);
+                    Log.d("RNPushNotification", "RNPushNotificationListenerService: acquirePokeFullWakeLockReleaseAfter(10000)");
+                }
+            }
+        }
+
         JSONObject data = getPushData(bundle.getString("data"));
         if (data != null) {
             if (!bundle.containsKey("message")) {
