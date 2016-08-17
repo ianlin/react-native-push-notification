@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.RingtoneManager;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -183,8 +184,26 @@ public class RNPushNotificationHelper {
             bundle.putBoolean("userInteraction", true);
             intent.putExtra("notification", bundle);
 
-            if (!bundle.containsKey("playSound") || bundle.getBoolean("playSound")) {
-                Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            //if (!bundle.containsKey("playSound") || bundle.getBoolean("playSound")) {
+            Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Log.d("RNPushNotification", String.format("ZXCPOIU: TAG: %s", TAG));
+            if (bundle.containsKey("playSound")) {
+                String soundUriString = bundle.getString("playSound");
+                Log.d("RNPushNotification", "ZXCPOIU: GOT playSound");
+                if (soundUriString != null) {
+                    if (soundUriString.equals("true")) {
+                        Log.d("RNPushNotification", "ZXCPOIU: playSound = true");
+                        notification.setSound(defaultSoundUri);
+                    } else if (soundUriString.equals("false")) {
+                        Log.d("RNPushNotification", "ZXCPOIU: playSound = false");
+                    } else {
+                        Log.d("RNPushNotification", String.format("ZXCPOIU: playSound = %s", soundUriString));
+                        defaultSoundUri = Uri.parse(soundUriString);
+                        notification.setSound(defaultSoundUri, AudioManager.STREAM_RING);
+                    }
+                }
+            } else {
+                Log.d("RNPushNotification", "ZXCPOIU: No playSound");
                 notification.setSound(defaultSoundUri);
             }
 
